@@ -1,22 +1,46 @@
 import React, { useState } from "react";
-// import { supabase } from "../src/services/supabaseClient";
+import { supabase } from "./services/supabaseClient";
 import "./index.css";
 
 function App() {
-
-  const [formDara, setData] = useState({
+  const [formData, setFormData] = useState({
     nome: "",
     telefone: "",
     email: "",
     cpf: "",
     profissao: "",
     modalidade: "",
-    recado: ""
-  })
+    recado: "",
+  });
 
+  const handleChange = async (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(formData)
+    //Enviar para supabase
 
+    const { error } = await supabase.from("users").insert([formData]);
 
+    if (error) {
+      console.log(error)
+      alert("deu merda")
+    } else {
+      alert("form enviado com sucesso");
+      setFormData({
+        nome: "",
+        telefone: "",
+        email: "",
+        cpf: "",
+        profissao: "",
+        modalidade: "",
+        recado: "",
+      });
+    }
+  };
 
   return (
     <>
@@ -175,7 +199,8 @@ function App() {
         <ol style={{ "--length": 4 }} role="list">
           {[
             {
-              title: "Entre em contato usando o nosso formulário, ou pelo nosso Whatsapp",
+              title:
+                "Entre em contato usando o nosso formulário, ou pelo nosso Whatsapp",
               text: "Esclareça suas dúvidas usando nossos canais de atendimento.",
             },
             {
@@ -205,24 +230,69 @@ function App() {
         </div>
 
         <div className="wrap_form">
-          <form>
-            <input type="text" placeholder="Nome" name="nome"></input>
-            <input type="tel" placeholder="Telefone" name="telefone"></input>
-            <input type="email" placeholder="E-mail" name="email"></input>
-            <input type="text" placeholder="CPF" name="cpf"></input>
-
-            <label for="Selecione">Escolha uma opção:</label>
-            <select name="Selecione">
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Nome"
+              name="nome"
+              onChange={handleChange}
+              value={formData.nome}
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Telefone"
+              name="telefone"
+              onChange={handleChange}
+              value={formData.telefone}
+              required
+            />
+            <input
+              type="email"
+              placeholder="E-mail"
+              name="email"
+              onChange={handleChange}
+              value={formData.email}
+              required
+            />
+            <input
+              type="text"
+              placeholder="CPF"
+              name="cpf"
+              onChange={handleChange}
+              value={formData.cpf}
+              required
+            />
+            <label htmlFor="profissao">Escolha uma profissão:</label>
+            <select
+              name="profissao"
+              onChange={handleChange}
+              value={formData.profissao}
+              required
+            >
+              <option value="">Selecione</option>
               <option value="Servidor Público">Servidor Público</option>
               <option value="Servidor Privado">Servidor Privado</option>
             </select>
-            <label for="Modalidade">Escolha a modalidade:</label>
-            <select name="Modalidade">
+            <label htmlFor="modalidade">Escolha a modalidade:</label>
+            <select
+              name="modalidade"
+              onChange={handleChange}
+              value={formData.modalidade}
+              required
+            >
+              <option value="">Selecione</option>
               <option value="Boleto">Boleto</option>
               <option value="Cheque">Cheque</option>
               <option value="FGTS">FGTS</option>
             </select>
-            <textarea placeholder="Deixe um recado!" name="racado"></textarea>
+            <textarea
+              placeholder="Deixe um recado!"
+              name="recado"
+              onChange={handleChange}
+              value={formData.recado}
+            ></textarea>
+            <button type="submit">Enviar</button>
           </form>
         </div>
       </section>
