@@ -13,21 +13,41 @@ function App() {
     recado: "",
   });
 
+  const [arquivo, setArquivo] = useState(null);
+
   const handleChange = async (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleFileChange = (e) => {
+    setArquivo(e.target.files[0]);
+  };
+  let fileUrl = null;
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData)
+    console.log(formData);
     //Enviar para supabase
 
-    const { error } = await supabase.from("users").insert([formData]);
+    const { error } = await supabase
+      .from("users")
+      .insert([{ ...formData, arquivo: fileUrl }]);
+    //enviar arquivo para supabase
+    if (arquivo) {
+      const { data, error } = await supabase.storage
+        .from("documents")
+        .upload(`arquivos/${arquivo.name}`, arquivo);
+
+      if (error) {
+        console.error("Erro ao enviar arquivo:", error);
+        return;
+      }
+      fileUrl = data.path;
+    }
 
     if (error) {
-      console.log(error)
-      alert("deu merda")
+      console.log(error);
+      alert("deu merda");
     } else {
       alert("form enviado com sucesso");
       setFormData({
@@ -39,6 +59,8 @@ function App() {
         modalidade: "",
         recado: "",
       });
+
+      setArquivo(null);
     }
   };
 
@@ -224,6 +246,41 @@ function App() {
         </ol>
       </section>
 
+      <section className="container_modalidades">
+        <divl className="title_modalidades">
+          <h1>Modalidades</h1>
+        </divl>
+
+        <div className="modalidades">
+          <table className="tabela">
+            <tr>
+              <th>Cheque</th>
+              <th>Boleto</th>
+              <th>FGTS</th>
+              <th>Debito em conta</th>
+            </tr>
+            <tr className="line1">
+              <td>Acesso rápido ao crédito: Ideal para quem precisa de dinheiro urgente e tem cheques disponíveis.</td>
+              <td>Sem necessidade de conta bancária: Ideal para quem não possui conta corrente ou prefere não comprometer seu saldo bancário.</td>
+              <td>Acesso imediato ao seu dinheiro: Receba o valor do seu FGTS de forma antecipada, sem precisar esperar pelos prazos do governo.</td>
+              <td>Praticidade e conveniência: O valor das parcelas é debitado automaticamente da sua conta, evitando esquecimentos e atrasos.</td>
+            </tr>
+            <tr className="line2">
+              <td>Flexibilidade de pagamento: Você pode escolher a data mais conveniente para a compensação dos cheques.</td>
+              <td>Pagamento flexível: Você escolhe o melhor dia do mês para efetuar o pagamento, adequando-se ao seu planejamento financeiro.</td>
+              <td>Sem comprometer seu orçamento: O valor é descontado diretamente do saldo do FGTS, sem impactar seu orçamento mensal.</td>
+              <td>Taxas de juros mais baixas: Geralmente, essa modalidade oferece condições mais vantajosas, devido à garantia de pagamento automático.</td>
+            </tr>
+            <tr className="line3">
+              <td>Exclusivo para SERVIDORES PÚBLICOS</td>
+              <td>Processo 100% online: Praticidade e rapidez na solicitação, sem necessidade de deslocamento.</td>
+              <td>Taxas de juros atrativas: Condições mais vantajosas em comparação a outras modalidades de crédito, devido à garantia do fundo.</td>
+              <td>Gestão financeira simplificada: Facilita o controle das suas finanças, com menos boletos para se preocupar.</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
       <section className="form_container">
         <div className="title_form">
           <h1>Entre em contato!</h1>
@@ -273,6 +330,8 @@ function App() {
               <option value="">Selecione</option>
               <option value="Servidor Público">Servidor Público</option>
               <option value="Servidor Privado">Servidor Privado</option>
+              <option value="Aposentado">Aposentado</option>
+              <option value="Pensionista">Pensionista</option>
             </select>
             <label htmlFor="modalidade">Escolha a modalidade:</label>
             <select
@@ -286,6 +345,8 @@ function App() {
               <option value="Cheque">Cheque</option>
               <option value="FGTS">FGTS</option>
             </select>
+
+            {/* <input type="file" onChange={handleFileChange}></input> */}
             <textarea
               placeholder="Deixe um recado!"
               name="recado"
